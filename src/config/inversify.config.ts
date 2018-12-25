@@ -1,3 +1,4 @@
+import * as dotenv from "dotenv";
 import { AsyncContainerModule } from "inversify";
 import { Repository, getConnection } from "typeorm";
 import { UserAccount } from "../entity/UserAccount";
@@ -23,6 +24,7 @@ import { PermissionService } from "../service/PermissionService";
 
 export const bindings = new AsyncContainerModule(async bind => {
   try {
+    await require("dotenv").config();
     await initDatabaseConnection();
     console.log(
       `initialized database connection: connected to ${getConnection().name}`
@@ -64,6 +66,6 @@ export const bindings = new AsyncContainerModule(async bind => {
     bind<PermissionDAO>(TYPE.PermissionDAO).to(PermissionDAO);
     bind<PermissionService>(TYPE.PermissionService).to(PermissionService);
   } catch (err) {
-    logger.error("Failed to initiallize ioc bindings..");
+    logger.error("Failed to initiallize ioc bindings.." + err);
   }
 });
