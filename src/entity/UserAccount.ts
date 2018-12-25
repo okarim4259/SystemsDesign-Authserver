@@ -38,6 +38,9 @@ export class UserAccount extends BaseEntity {
   @Column("varchar", { nullable: true })
   accountType: IUserAccountType;
 
+  @Column("varchar", { nullable: true })
+  googleAccountId: string;
+
   @ManyToMany(type => Role)
   @JoinTable()
   roles: Role[];

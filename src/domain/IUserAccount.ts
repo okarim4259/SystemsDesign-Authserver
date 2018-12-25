@@ -9,4 +9,5 @@ export interface IUserAccount {
   password: string;
   accountType: IUserAccountType;
   roles: Role[];
+  googleAccountId?: string;
 }

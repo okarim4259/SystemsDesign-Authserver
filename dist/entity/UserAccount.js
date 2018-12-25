@@ -48,6 +48,10 @@ __decorate([
     __metadata("design:type", String)
 ], UserAccount.prototype, "accountType", void 0);
 __decorate([
+    typeorm_1.Column("varchar", { nullable: true }),
+    __metadata("design:type", String)
+], UserAccount.prototype, "googleAccountId", void 0);
+__decorate([
     typeorm_1.ManyToMany(type => Role_1.Role),
     typeorm_1.JoinTable(),
     __metadata("design:type", Array)

@@ -36,6 +36,7 @@ export const bindings = new AsyncContainerModule(async bind => {
     await require("../controller/AddressController");
     await require("../controller/AdminController");
     await require("../controller/PermissionController");
+    await require("../controller/OAuthController");
 
     bind<Repository<UserAccount>>(TYPE.UserAccountRepository).toDynamicValue(
       () => {

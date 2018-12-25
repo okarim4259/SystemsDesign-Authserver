@@ -31,6 +31,7 @@ exports.bindings = new inversify_1.AsyncContainerModule((bind) => __awaiter(this
         yield require("../controller/AddressController");
         yield require("../controller/AdminController");
         yield require("../controller/PermissionController");
+        yield require("../controller/OAuthController");
         bind(types_1.TYPE.UserAccountRepository).toDynamicValue(() => {
             return RepositoryFactory_1.UserAccountRepository();
         });

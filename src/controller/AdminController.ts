@@ -18,6 +18,7 @@ import { IUserAccount } from "../domain/IUserAccount";
 import { IUserAccountType } from "../domain/IUserAccountType";
 import { IUserResponse } from "../domain/IUserResponse";
 import { logger } from "../utility/Logger";
+import { IUserContext } from "../domain/IUserContext";
 
 @controller("/admin")
 export class AdminController {
@@ -89,7 +90,7 @@ export class AdminController {
           .json({ message: "Oops something went wrong!!!" });
       }
 
-      const adminUser: IUserResponse = {
+      const adminUser: IUserContext = {
         userId: registerNewUser.userId,
         userName: registerNewUser.userName,
         firstName: registerNewUser.firstName,

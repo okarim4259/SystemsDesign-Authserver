@@ -18,13 +18,12 @@ import { HttpStatus } from "../utility/HTTP";
 import { KEYS } from "../config/constants/constants.config";
 import passport = require("passport");
 import { TokenService } from "../service/TokenService";
-import { Repository } from "typeorm";
+
 import { Role } from "../entity/Role";
 import { IUserContext } from "../domain/IUserContext";
 import { RoleService } from "../service/RoleService";
-import { Permission } from "../entity/Permission";
+
 import { ERoles } from "../utility/ERoles";
-import { PermissionService } from "../service/PermissionService";
 
 @controller("/users")
 export class UserController {
@@ -32,18 +31,15 @@ export class UserController {
   private readonly _userAccountService: UserAccountService;
   private readonly _tokenService: TokenService;
   private readonly _roleService: RoleService;
-  private readonly _permissionService: PermissionService;
 
   public constructor(
     @inject(TYPE.UserAccountService) userAccountService: UserAccountService,
     @inject(TYPE.TokenService) tokenService: TokenService,
-    @inject(TYPE.RoleService) roleService: RoleService,
-    @inject(TYPE.PermissionService) permissionService: PermissionService
+    @inject(TYPE.RoleService) roleService: RoleService
   ) {
     this._userAccountService = userAccountService;
     this._tokenService = tokenService;
     this._roleService = roleService;
-    this._permissionService = permissionService;
   }
 
   @httpGet("/")
@@ -212,9 +208,7 @@ export class UserController {
         roles: userRoles
       };
 
-      res.json({
-        user
-      });
+      return res.status(HttpStatus.OK).json(user);
     } catch (err) {
       logger.error(this.TAG + err.message);
       return res

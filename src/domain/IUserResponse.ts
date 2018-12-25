@@ -7,4 +7,5 @@ export interface IUserResponse {
   lastName: string;
   email: string;
   accountType?: string;
+  additionalInfo?: any;
 }

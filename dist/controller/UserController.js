@@ -34,14 +34,12 @@ const passport = require("passport");
 const TokenService_1 = require("../service/TokenService");
 const RoleService_1 = require("../service/RoleService");
 const ERoles_1 = require("../utility/ERoles");
-const PermissionService_1 = require("../service/PermissionService");
 let UserController = class UserController {
-    constructor(userAccountService, tokenService, roleService, permissionService) {
+    constructor(userAccountService, tokenService, roleService) {
         this.TAG = "USER_CONTROLLER ";
         this._userAccountService = userAccountService;
         this._tokenService = tokenService;
         this._roleService = roleService;
-        this._permissionService = permissionService;
     }
     get(res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -172,9 +170,7 @@ let UserController = class UserController {
                     accountType: req.user.accountType,
                     roles: userRoles
                 };
-                res.json({
-                    user
-                });
+                return res.status(HTTP_1.HttpStatus.OK).json(user);
             }
             catch (err) {
                 Logger_1.logger.error(this.TAG + err.message);
@@ -221,11 +217,9 @@ UserController = __decorate([
     __param(0, inversify_1.inject(types_1.TYPE.UserAccountService)),
     __param(1, inversify_1.inject(types_1.TYPE.TokenService)),
     __param(2, inversify_1.inject(types_1.TYPE.RoleService)),
-    __param(3, inversify_1.inject(types_1.TYPE.PermissionService)),
     __metadata("design:paramtypes", [UserAccountService_1.UserAccountService,
         TokenService_1.TokenService,
-        RoleService_1.RoleService,
-        PermissionService_1.PermissionService])
+        RoleService_1.RoleService])
 ], UserController);
 exports.UserController = UserController;
 //# sourceMappingURL=UserController.js.map
