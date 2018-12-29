@@ -46,7 +46,7 @@ export class UserController {
   public async get(@response() res: express.Response) {
     try {
       const users = await this._userAccountService.getAll();
-      const usersResonses = new Array<IUserResponse>();
+      const usersResponses = new Array<IUserResponse>();
       users.forEach(user => {
         const userResponse: IUserResponse = {
           userId: user.userId,
@@ -55,10 +55,9 @@ export class UserController {
           lastName: user.lastName,
           email: user.email
         };
-        usersResonses.push(userResponse);
+        usersResponses.push(userResponse);
       });
-
-      res.json(usersResonses);
+      res.json(usersResponses);
     } catch (err) {
       logger.error(this.TAG + err.message);
       return res

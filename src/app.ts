@@ -3,7 +3,7 @@ import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import * as log4js from "log4js";
 
-import { initLogger, logger } from "./utility/Logger";
+import { initLogger } from "./utility/Logger";
 import * as passport from "passport";
 
 class App {

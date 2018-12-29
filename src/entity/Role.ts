@@ -6,7 +6,6 @@ import {
   ManyToMany,
   JoinTable
 } from "typeorm";
-import { UserAccount } from "./UserAccount";
 import { Permission } from "./Permission";
 
 @Entity()
