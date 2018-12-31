@@ -86,6 +86,7 @@ passport.use(
         );
       } catch (err) {
         logger.error(err);
+        done(null, false);
       }
     }
   )

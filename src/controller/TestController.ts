@@ -11,8 +11,8 @@ export class TestController {
 
   @httpGet("/")
   public async get(@response() res: express.Response) {
-    const users = await this._userAccountDAO.getAllUsers();
-    console.log(users);
+    // const users = await this._userAccountDAO.getAllUsers();
+    // console.log(users);
     res.json({ message: "Test Controller Initialized" });
   }
 }
