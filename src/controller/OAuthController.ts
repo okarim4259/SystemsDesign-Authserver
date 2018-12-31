@@ -1,25 +1,21 @@
-import * as express from "express";
 import {
   controller,
   httpGet,
   request,
   response
 } from "inversify-express-utils";
-import { HttpStatus } from "../utility/HTTP";
-import passport = require("passport");
-import { TokenService } from "../service/TokenService";
-import { inject } from "inversify";
-import { TYPE } from "../config/typeBindings/types";
-import { KEYS } from "../config/constants/constants.config";
+import * as express from "express";
 import { logger } from "../utility/Logger";
+import { HttpStatus } from "../utility/HttpStatus";
+import { inject } from "inversify";
+import { TYPE_PROCESSOR } from "../config/ioc_container/inversify.typeBindings";
+import { OAuthProcessor } from "../processor/OAuthProcessor";
+import passport = require("passport");
 
-@controller("/oauth")
+@controller("/oauth2")
 export class OAuthController {
-  private readonly _tokenService: TokenService;
-
-  constructor(@inject(TYPE.TokenService) tokenService: TokenService) {
-    this._tokenService = tokenService;
-  }
+  @inject(TYPE_PROCESSOR.OAuthProcessor)
+  private readonly _oauthProcessor: OAuthProcessor;
 
   @httpGet(
     "/google",
@@ -30,28 +26,12 @@ export class OAuthController {
     @response() res: express.Response
   ) {
     try {
-      const payload = {
-        ISSUER: KEYS.ISSUER,
-        sub: req.user.userId,
-        email: req.user.email
-      };
-      const jwtToken = await this._tokenService.generateUserAccessToken(
-        payload
-      );
-      if (!jwtToken) {
-        logger.error("Could not generate access token for google OAuth");
-        return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: "Oops something went wrong!!!" });
-      }
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        access_token: "Bearer " + jwtToken,
-        googleProfile: req.user.additionalInfo
-      });
+      return await this._oauthProcessor.googleOAuthSignIn(req, res);
     } catch (err) {
       logger.error(err);
-      return res.status(HttpStatus.OK).json({ message: "So far so good!" });
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Oops something went wrong!!!" });
     }
   }
 }

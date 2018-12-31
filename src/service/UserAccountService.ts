@@ -1,38 +1,35 @@
 import { injectable, inject } from "inversify";
-import { TYPE } from "../config/typeBindings/types";
+import { TYPE_DAO } from "../config/ioc_container/inversify.typeBindings";
+import { UserAccountDAO } from "../data_access/dao/UserAccountDAO";
 import { UserAccount } from "../entity/UserAccount";
-import { IUserAccount } from "../domain/IUserAccount";
-import { UserAccountDAO } from "../dataAccess/DAO/UserAccountDAO";
+import { INewUserRequest } from "../domain/user/INewUserRequest";
 
 @injectable()
 export class UserAccountService {
+  @inject(TYPE_DAO.UserAccountDAO)
   private readonly _userAccountDAO: UserAccountDAO;
 
-  constructor(@inject(TYPE.UserAccountDAO) userAccountDAO: UserAccountDAO) {
-    this._userAccountDAO = userAccountDAO;
-  }
-
-  public async getAll(): Promise<UserAccount[]> {
+  public async getAllUsers(): Promise<UserAccount[]> {
     return this._userAccountDAO.getAllUsers();
   }
 
-  public async findByUserId(_userId: string): Promise<UserAccount> {
+  public async getUserByUserId(_userId): Promise<UserAccount> {
     return this._userAccountDAO.findByUserId(_userId);
   }
 
-  public async findByUserName(_userName: string): Promise<UserAccount> {
+  public async getUserByUserName(_userName): Promise<UserAccount> {
     return this._userAccountDAO.findByUserName(_userName);
   }
 
-  public async findByEmail(_email: string): Promise<UserAccount> {
+  public async getUserByEmail(_email: string): Promise<UserAccount> {
     return this._userAccountDAO.findByEmail(_email);
   }
 
-  public async registerNewUser(newUser: IUserAccount): Promise<UserAccount> {
-    return await this._userAccountDAO.createNewUser(newUser);
+  public async createNewUser(_newUser: INewUserRequest): Promise<UserAccount> {
+    return this._userAccountDAO.createNewUser(_newUser);
   }
 
-  public async getUserRoles(_userRefid) {
-    return await this._userAccountDAO.getUserRoles(_userRefid);
+  public async getUserRole(_id: number) {
+    return this._userAccountDAO.getUserRoles(_id);
   }
 }

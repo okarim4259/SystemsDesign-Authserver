@@ -5,40 +5,31 @@ import {
   request,
   response
 } from "inversify-express-utils";
-import { UserAccountService } from "../service/UserAccountService";
-import { RoleService } from "../service/RoleService";
 import { inject } from "inversify";
-import { TYPE } from "../config/typeBindings/types";
+import { TYPE_SERVICE } from "../config/ioc_container/inversify.typeBindings";
+import { RoleService } from "../service/RoleService";
 import * as express from "express";
-import { HttpStatus } from "../utility/HTTP";
+import { HttpStatus } from "../utility/HttpStatus";
 
 @controller("/permissions")
 export class PermissionController {
-  private readonly _userAccountService: UserAccountService;
+  @inject(TYPE_SERVICE.RoleService)
   private readonly _roleService: RoleService;
 
-  constructor(
-    @inject(TYPE.UserAccountService) userAccountService: UserAccountService,
-    @inject(TYPE.RoleService) roleService: RoleService
-  ) {
-    this._userAccountService = userAccountService;
-    this._roleService = roleService;
-  }
-
   @httpGet("/check/:roleId")
-  public async checkPermissions(
+  public async checkRolePermission(
     @requestParam("roleId") roleId,
-    @requestParam("dummy") dummy,
-    @request() req: express.Request,
     @response() res: express.Response
   ) {
     try {
-      const rolePermissions = await this._roleService.getPermission(roleId);
+      const rolePermissions = await this._roleService.getRolePermissions(
+        roleId
+      );
       return res.status(HttpStatus.OK).json(rolePermissions);
     } catch (err) {
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ err: "Oops Something went wrong!!!" });
+        .json({ message: "Oops something went wrong!!!" });
     }
   }
 }

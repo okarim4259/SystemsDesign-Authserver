@@ -1,20 +1,18 @@
-// import { Request, Response, NextFunction } from "express";
-// import { userAccountDAO } from "../dataAccess/DAO/UserAccountDAO";
+import { controller, httpGet, response } from "inversify-express-utils";
+import * as express from "express";
+import { inject } from "inversify";
+import { TYPE_DAO } from "../config/ioc_container/inversify.typeBindings";
+import { UserAccountDAO } from "../data_access/dao/UserAccountDAO";
 
-// class UserAccountController {
-//   public async addNewUser(req: Request, res: Response) {
-//     userAccountDAO
-//       .createNewUser(req.body)
-//       .then(newUser => res.json(newUser))
-//       .catch(err => res.json(err));
-//   }
+@controller("/test")
+export class TestController {
+  @inject(TYPE_DAO.UserAccountDAO)
+  private readonly _userAccountDAO: UserAccountDAO;
 
-//   public async getAllUsers(req: Request, res: Response) {
-//     userAccountDAO
-//       .findAllUsers()
-//       .then(users => res.json(users))
-//       .catch(err => console.log(err));
-//   }
-// }
-
-// export const userAccountController = new UserAccountController();
+  @httpGet("/")
+  public async get(@response() res: express.Response) {
+    const users = await this._userAccountDAO.getAllUsers();
+    console.log(users);
+    res.json({ message: "Test Controller Initialized" });
+  }
+}

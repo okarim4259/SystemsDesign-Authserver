@@ -1,52 +1,49 @@
 import * as passport from "passport";
-import * as jwt from "jsonwebtoken";
-import * as bcrypt from "bcryptjs";
 import { Strategy, ExtractJwt } from "passport-jwt";
-import { UserAccount } from "../entity/UserAccount";
-import { logger } from "../utility/Logger";
-import { KEYS } from "./constants/constants.config";
-import { IUserAccount } from "../domain/IUserAccount";
-import { IUserAccountType } from "../domain/IUserAccountType";
-import { Role } from "../entity/Role";
-import { ERoles } from "../utility/ERoles";
-import { IUserResponse } from "../domain/IUserResponse";
-
+import { PROPERTIES } from "../properties/properties";
+import { UserAccount } from "../../entity/UserAccount";
+import { logger } from "../../utility/Logger";
+import { IUserInfoContext } from "../../domain/user/IUserInfoContext";
+import { Role } from "../../entity/Role";
+import { ERoles } from "../../domain/helpers/ERoles";
+import { INewUserRequest } from "../../domain/user/INewUserRequest";
+import * as bcrypt from "bcryptjs";
+import { EUserAccountType } from "../../domain/helpers/EUserAccountType";
 passport.use(
-  "local",
+  "context",
   new Strategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: KEYS.JWT_SECRET
+      secretOrKey: PROPERTIES.JWT_SECRET
     },
-    (jwt_payload, done) => {
-      UserAccount.findOne({ where: { userId: jwt_payload.sub } })
+    (_jwtPayload, done) => {
+      UserAccount.findOne({ where: { userId: _jwtPayload.sub } })
         .then(user => {
           if (user) {
             return done(null, user);
+          } else {
+            return done(null, false);
           }
-          return done(null, false);
         })
-        .catch(err => logger.error("Excepetion in JWT Strategy: " + err));
+        .catch(err => logger.error(`Exception parsing jwt token ${err}`));
     }
   )
 );
-
-// const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 const GoogleStrategy = require("passport-google-plus-token");
 passport.use(
   "google-oauth2",
   new GoogleStrategy(
     {
-      clientID: KEYS.GOOGLE_OAUTH2_CLIENT_ID,
-      clientSecret: KEYS.GOOGLE_OAUTH2_CLIENT_SECRET
+      clientID: PROPERTIES.GOOGLE_OAUTH2_CLIENT_ID,
+      clientSecret: PROPERTIES.GOOGLE_OAUTH2_CLIENT_SECRET
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        UserAccount.findOne({ where: { googleAccountId: profile.id } })
-          .then(async user => {
+        UserAccount.findOne({ where: { googleAccountId: profile.id } }).then(
+          async user => {
             if (user) {
-              const userResponse: IUserResponse = {
+              const userResponse: IUserInfoContext = {
                 userId: user.userId,
                 userName: user.userName,
                 firstName: user.firstName,
@@ -60,20 +57,21 @@ passport.use(
               const roles: Role[] = [
                 await Role.findOne({ where: { name: ERoles.USER } })
               ];
-              const newUser: IUserAccount = {
+              const newGoogleAccountUser: INewUserRequest = {
                 userName: profile.displayName,
                 firstName: profile.name.givenName,
                 lastName: profile.name.familyName,
                 email: profile.emails[0].value,
                 password: await bcrypt.hash(profile.id, 10),
-                accountType: IUserAccountType.google,
+                accountType: EUserAccountType.google,
                 roles: roles,
                 googleAccountId: profile.id
               };
-              const createdUser = UserAccount.create(newUser);
+
+              const createdUser = UserAccount.create(newGoogleAccountUser);
               const registerNewUser = await UserAccount.save(createdUser);
 
-              const userResponse: IUserResponse = {
+              const userReponse: IUserInfoContext = {
                 userId: registerNewUser.userId,
                 userName: registerNewUser.userName,
                 firstName: registerNewUser.firstName,
@@ -82,16 +80,12 @@ passport.use(
                 accountType: registerNewUser.accountType,
                 additionalInfo: profile
               };
-
-              return done(null, userResponse);
+              return done(null, userReponse);
             }
-          })
-          .catch(err => {
-            logger.error("Exception in Google OAuth: " + err);
-            done(err, false, err.message);
-          });
+          }
+        );
       } catch (err) {
-        done(err, false, err.message);
+        logger.error(err);
       }
     }
   )

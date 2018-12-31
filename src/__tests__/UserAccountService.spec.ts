@@ -1,46 +1,48 @@
 require("dotenv").config();
 import "reflect-metadata";
 import "mocha";
-import { expect } from "chai";
-import { inject, AsyncContainerModule, Container } from "inversify";
+import { Container } from "inversify";
 import { cleanUpMetadata } from "inversify-express-utils";
-import { TYPE } from "../config/typeBindings/types";
+import { closeDatabaseConnection } from "../config/database";
+import { expect } from "chai";
 import { UserAccountService } from "../service/UserAccountService";
-import { logger } from "../utility/Logger";
-import {
-  userAccountServiceContainer,
-  userAccountDAOContainer,
-  userAccountRepositoryContainer
-} from "./test.config";
-import {
-  initDatabaseConnection,
-  closeDatabaseConnection
-} from "../config/databaseConfiguration/DatabaseConnection";
+import { TYPE_SERVICE } from "../config/ioc_container/inversify.typeBindings";
+import { bindings } from "../config/ioc_container/inversify.config";
+import { UserAccount } from "../entity/UserAccount";
 
 describe("User Account Service Test", async () => {
   let container: Container;
-
   beforeEach(async () => {
     cleanUpMetadata();
     container = new Container();
-    container.load(userAccountServiceContainer);
-    container.load(userAccountDAOContainer);
-    container.load(userAccountRepositoryContainer);
-    await initDatabaseConnection();
+    await container.loadAsync(bindings);
+  });
+
+  afterEach(async () => {
+    await closeDatabaseConnection();
   });
 
   it("Should pass simple test", () => {
-    const a = "a";
-    expect(a).to.equal("a");
+    const result = "result";
+    expect(result).to.equal("result");
   });
 
-  it("Should Load UserAccountService", async () => {
-    const uas = container.get<UserAccountService>(TYPE.UserAccountService);
-    const users = await uas.getAll();
-    expect(users.length).to.equal(1);
-  });
+  // it("Should return all users", async () => {
+  //   const userAccountService = container.get<UserAccountService>(
+  //     TYPE_SERVICE.UserAccountService
+  //   );
+  //   const users = await userAccountService.getAllUsers();
+  //   expect(users.length).to.equal(1);
+  // });
 
-  afterEach(() => {
-    closeDatabaseConnection();
+  it("Should return user by username", async () => {
+    const userAccountService = container.get<UserAccountService>(
+      TYPE_SERVICE.UserAccountService
+    );
+    const user_name = "okarimdev";
+    const user: UserAccount = await userAccountService.getUserByUserName(
+      user_name
+    );
+    expect(user.userName).to.equal(user_name);
   });
 });

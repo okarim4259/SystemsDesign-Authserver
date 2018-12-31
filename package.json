@@ -2,12 +2,12 @@
   "name": "authserver",
   "version": "1.0.0",
   "description": "Authentication & Authorization dedicated server.",
-  "main": "dist/server.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node ./dist/server.js",
+    "build": "rm -r dist && tsc",
+    "start": "node ./dist/index.js",
     "test": "mocha -r ts-node/register src/__tests__/**/*.spec.ts",
-    "dev-ts": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' src/server.ts",
+    "dev-ts": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' src/index.ts",
     "mock-prod": "npm run build && export NODE_ENV=production && npm run start",
     "prod": "npm run build && npm run start"
   },

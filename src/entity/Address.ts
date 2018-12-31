@@ -1,10 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { UserAccount } from "./UserAccount";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  Generated,
+  BaseEntity
+} from "typeorm";
 
 @Entity()
-export class Address {
+export class Address extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: number;
+
+  @Column()
+  @Generated("uuid")
+  addressId: string;
 
   @Column("varchar", { length: 50 })
   addressName: string;

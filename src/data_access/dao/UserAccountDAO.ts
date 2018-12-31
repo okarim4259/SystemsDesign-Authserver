@@ -1,21 +1,14 @@
-import { UserAccount } from "../../entity/UserAccount";
 import { injectable, inject } from "inversify";
+import { TYPE_REPOSITORY } from "../../config/ioc_container/inversify.typeBindings";
 import { Repository } from "typeorm";
-import { TYPE } from "../../config/typeBindings/types";
-import { IUserAccount } from "../../domain/IUserAccount";
-import { throws } from "assert";
+import { UserAccount } from "../../entity/UserAccount";
+import { INewUserRequest } from "../../domain/user/INewUserRequest";
 import { Role } from "../../entity/Role";
 
 @injectable()
 export class UserAccountDAO {
+  @inject(TYPE_REPOSITORY.UserAccountRepository)
   private readonly _userAccountRepository: Repository<UserAccount>;
-
-  constructor(
-    @inject(TYPE.UserAccountRepository)
-    userAccountRepository: Repository<UserAccount>
-  ) {
-    this._userAccountRepository = userAccountRepository;
-  }
 
   public async getAllUsers(): Promise<UserAccount[]> {
     return this._userAccountRepository.find();
@@ -25,27 +18,26 @@ export class UserAccountDAO {
     return this._userAccountRepository.findOne({ where: { userId: _userId } });
   }
 
+  public async findByEmail(_email: string): Promise<UserAccount> {
+    return this._userAccountRepository.findOne({ where: { email: _email } });
+  }
+
   public async findByUserName(_userName: string): Promise<UserAccount> {
     return this._userAccountRepository.findOne({
       where: { userName: _userName }
     });
   }
 
-  public async findByEmail(_email: string): Promise<UserAccount> {
-    return this._userAccountRepository.findOne({ where: { email: _email } });
-  }
-
-  public async createNewUser(_newUser: IUserAccount): Promise<UserAccount> {
+  public async createNewUser(_newUser: INewUserRequest) {
     const createdUser = this._userAccountRepository.create(_newUser);
     return this._userAccountRepository.save(createdUser);
   }
 
-  public async getUserRoles(_userRefId): Promise<Role[]> {
+  public async getUserRoles(_user_Ref_id: number): Promise<Role[]> {
     const user = await this._userAccountRepository.findOne({
       relations: ["roles"],
-      where: { id: _userRefId }
+      where: { id: _user_Ref_id }
     });
-
     return user.roles;
   }
 }

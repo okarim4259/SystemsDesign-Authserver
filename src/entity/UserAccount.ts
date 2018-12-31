@@ -2,13 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   Generated,
-  BaseEntity,
   ManyToMany,
-  JoinTable
+  JoinTable,
+  BaseEntity
 } from "typeorm";
-import { IUserAccountType } from "../domain/IUserAccountType";
+import { EUserAccountType } from "../domain/helpers/EUserAccountType";
 import { Role } from "./Role";
 
 @Entity()
@@ -20,26 +19,29 @@ export class UserAccount extends BaseEntity {
   @Generated("uuid")
   userId: string;
 
-  @Column("varchar", { length: 50, unique: true })
+  @Column("varchar", { length: 50, unique: true, nullable: false })
   userName: string;
 
-  @Column("varchar", { length: 50 })
+  @Column("varchar", { length: 50, nullable: false })
   firstName: string;
 
   @Column("varchar", { length: 50 })
   lastName: string;
 
-  @Column("varchar", { length: 50 })
+  @Column("varchar", { length: 50, unique: true, nullable: false })
   email: string;
 
   @Column("varchar")
   password: string;
 
   @Column("varchar", { nullable: true })
-  accountType: IUserAccountType;
+  accountType: EUserAccountType;
 
   @Column("varchar", { nullable: true })
   googleAccountId: string;
+
+  @Column("varchar", { nullable: true })
+  phoneNumber: string;
 
   @ManyToMany(type => Role)
   @JoinTable()

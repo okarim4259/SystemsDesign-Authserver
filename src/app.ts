@@ -1,33 +1,37 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import * as cors from "cors";
 import * as log4js from "log4js";
-
-import { initLogger } from "./utility/Logger";
+import * as cors from "cors";
 import * as passport from "passport";
+import { initLogger } from "./utility/Logger";
 
+//TODO: ADD rate limiter, helmet, JOI VALIDATION
 class App {
-  private App: express.Application;
-
+  private _app: express.Application;
   constructor() {
-    this.App = express();
-    this.appConfig();
+    this._app = express();
+    this._initApplicationMiddleware();
   }
 
-  private appConfig(): void {
+  public _initExpressApplication(): express.Application {
+    return this._app;
+  }
+
+  private _initApplicationMiddleware(): void {
+    this._initLogger();
+    this._app.use(cors());
+    this._app.use(bodyParser.json());
+    this._app.use(bodyParser.urlencoded({ extended: false }));
+    this._app.use(passport.initialize());
+    require("./config/passport/passport.config");
+  }
+
+  private _initLogger(): void {
     initLogger();
-    this.App.use(
+    this._app.use(
       log4js.connectLogger(log4js.getLogger("http"), { level: "auto" })
     );
-    this.App.use(bodyParser.json());
-    this.App.use(bodyParser.urlencoded({ extended: false }));
-    this.App.use(cors());
-    this.App.use(passport.initialize());
-  }
-
-  public getExpressApp(): express.Application {
-    return this.App;
   }
 }
 
-export const app = new App().getExpressApp();
+export const app = new App()._initExpressApplication();

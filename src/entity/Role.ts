@@ -1,10 +1,10 @@
 import {
-  BaseEntity,
   Entity,
-  Column,
   PrimaryGeneratedColumn,
+  Column,
   ManyToMany,
-  JoinTable
+  JoinTable,
+  BaseEntity
 } from "typeorm";
 import { Permission } from "./Permission";
 

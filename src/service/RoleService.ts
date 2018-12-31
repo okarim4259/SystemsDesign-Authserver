@@ -1,20 +1,22 @@
 import { injectable, inject } from "inversify";
-import { RoleDAO } from "../dataAccess/dao/RoleDAO";
-import { TYPE } from "../config/typeBindings/types";
+import { TYPE_DAO } from "../config/ioc_container/inversify.typeBindings";
+import { RoleDAO } from "../data_access/dao/RoleDAO";
+import { Role } from "../entity/Role";
 
 @injectable()
 export class RoleService {
+  @inject(TYPE_DAO.RoleDAO)
   private readonly _roleDAO: RoleDAO;
 
-  constructor(@inject(TYPE.RoleDAO) roleDAO: RoleDAO) {
-    this._roleDAO = roleDAO;
+  public async getAllRoles(): Promise<Role[]> {
+    return this._roleDAO.findAllRoles();
   }
 
-  public async getRoleByName(_roleName) {
-    return await this._roleDAO.getRoleByName(_roleName);
+  public async getRoleByName(_roleName: string): Promise<Role> {
+    return this._roleDAO.findRoleByName(_roleName);
   }
 
-  public async getPermission(_roleId) {
-    return this._roleDAO.findPerm(_roleId);
+  public async getRolePermissions(_roleId) {
+    return this._roleDAO.findRolePermissions(_roleId);
   }
 }

@@ -1,29 +1,29 @@
 import { ContainerModule } from "inversify";
 import { UserAccountService } from "../service/UserAccountService";
-import { TYPE } from "../config/typeBindings/types";
-import { UserAccountDAO } from "../dataAccess/DAO/UserAccountDAO";
+import {
+  TYPE_SERVICE,
+  TYPE_DAO,
+  TYPE_REPOSITORY
+} from "../config/ioc_container/inversify.typeBindings";
+import { UserAccountDAO } from "../data_access/dao/UserAccountDAO";
 import { Repository } from "typeorm";
 import { UserAccount } from "../entity/UserAccount";
-import { UserAccountRepository } from "../dataAccess/RepositoryFactory";
+import { UserAccountRepository } from "../data_access/RepositoryFactory";
 
-let userAccountServiceContainer = new ContainerModule(bind => {
-  bind<UserAccountService>(TYPE.UserAccountService).to(UserAccountService);
-});
-
-let userAccountDAOContainer = new ContainerModule(bind => {
-  bind<UserAccountDAO>(TYPE.UserAccountDAO).to(UserAccountDAO);
-});
-
-let userAccountRepositoryContainer = new ContainerModule(bind => {
-  bind<Repository<UserAccount>>(TYPE.UserAccountRepository).toDynamicValue(
-    () => {
+export const userAccountRepositoryTestContainer = new ContainerModule(bind => {
+  bind<Repository<UserAccount>>(TYPE_REPOSITORY.UserAccountRepository)
+    .toDynamicValue(() => {
       return UserAccountRepository();
-    }
+    })
+    .inRequestScope();
+});
+
+export const userAccountServiceTestContainer = new ContainerModule(bind => {
+  bind<UserAccountService>(TYPE_SERVICE.UserAccountService).to(
+    UserAccountService
   );
 });
 
-export {
-  userAccountServiceContainer,
-  userAccountDAOContainer,
-  userAccountRepositoryContainer
-};
+export const userAccountDAOTestContainer = new ContainerModule(bind => {
+  bind<UserAccountDAO>(TYPE_DAO.UserAccountDAO).to(UserAccountDAO);
+});
