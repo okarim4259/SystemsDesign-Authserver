@@ -11,6 +11,8 @@ import { inject } from "inversify";
 import { TYPE_PROCESSOR } from "../config/ioc_container/inversify.typeBindings";
 import { AuthProcessor } from "../processor/AuthProcessor";
 import { logger } from "../utility/Logger";
+import { validateLoginInput } from "../utility/validation/Login";
+import { validateRegistrationInput } from "../utility/validation/Register";
 
 @controller("/auth")
 export class AuthenticationController {
@@ -23,6 +25,10 @@ export class AuthenticationController {
     @response() res: express.Response
   ) {
     try {
+      const { errors, isValid } = validateRegistrationInput(req.body);
+      if (!isValid) {
+        return res.status(HttpStatus.BAD_REQUEST).json(errors);
+      }
       return await this._authProcessor.registerNewUser(req, res);
     } catch (err) {
       logger.error(err);
@@ -38,6 +44,10 @@ export class AuthenticationController {
     @response() res: express.Response
   ) {
     try {
+      const { errors, isValid } = validateLoginInput(req.body);
+      if (!isValid) {
+        return res.status(HttpStatus.BAD_REQUEST).json(errors);
+      }
       return await this._authProcessor.loginUser(req, res);
     } catch (err) {
       logger.error(err);

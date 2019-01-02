@@ -48,15 +48,20 @@ export class AuthProcessor {
     );
     if (!jwtToken) {
       logger.error("Could not generate jwt token");
+
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "Could not perform login at this time " });
     }
-
-    return res.status(HttpStatus.OK).json({
+    res.cookie("access_token", jwtToken, {
+      httpOnly: true,
+      secure: true
+    });
+    res.status(HttpStatus.OK).json({
       success: true,
       access_token: "Bearer " + jwtToken
     });
+    return res;
   }
 
   public async registerNewUser(req: Request, res: Response): Promise<Response> {
