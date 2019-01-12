@@ -28,9 +28,17 @@ export class UserAccountDAO {
     });
   }
 
-  public async createNewUser(_newUser: INewUserRequest) {
+  public async createNewUser(_newUser: INewUserRequest): Promise<UserAccount> {
     const createdUser = this._userAccountRepository.create(_newUser);
     return this._userAccountRepository.save(createdUser);
+  }
+
+  public async updateUser(_user: UserAccount): Promise<UserAccount> {
+    return this._userAccountRepository.save(_user);
+  }
+
+  public async deleteUser(_user: UserAccount): Promise<UserAccount> {
+    return this._userAccountRepository.remove(_user);
   }
 
   public async getUserRoles(_user_Ref_id: number): Promise<Role[]> {

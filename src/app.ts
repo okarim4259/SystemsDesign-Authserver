@@ -4,11 +4,11 @@ import * as log4js from "log4js";
 import * as cors from "cors";
 import * as passport from "passport";
 import * as helmet from "helmet";
+import * as cookieParser from "cookie-parser";
 import { initLogger } from "./utility/Logger";
 import { CorsOptions } from "./utility/CorsOptions";
 import { rateLimiter } from "./utility/RateLimiter";
 
-//TODO: ADD rate limiter, helmet, JOI VALIDATION
 class App {
   private _app: express.Application;
   constructor() {
@@ -25,6 +25,7 @@ class App {
     this._app.use(helmet());
     this._app.use(cors(CorsOptions));
     this._app.use(rateLimiter);
+    this._app.use(cookieParser());
     this._app.use(bodyParser.json());
     this._app.use(bodyParser.urlencoded({ extended: false }));
     this._app.use(passport.initialize());

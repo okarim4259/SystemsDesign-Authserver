@@ -9,6 +9,6 @@ export interface INewUserRequest {
   password: string;
   accountType: EUserAccountType;
   roles: Role[];
-  googleAccountId?: string;
+  externalProviderId?: string;
   phoneNumber?: string;
 }

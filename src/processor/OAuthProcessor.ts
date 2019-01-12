@@ -30,4 +30,25 @@ export class OAuthProcessor {
       googleProfile: req.user.additionalInfo
     });
   }
+
+  public async facebookOAuthSignIn(
+    req: express.Request,
+    res: express.Response
+  ): Promise<express.Response> {
+    const jwtToken = this._tokenService.generateUserAccessToken(
+      req.user.userId,
+      req.user.email
+    );
+    if (!jwtToken) {
+      logger.error("Could not generate jwt token for google oauth");
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Could not perform login at this time " });
+    }
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      access_token: "Bearer " + jwtToken,
+      googleProfile: req.user.additionalInfo
+    });
+  }
 }

@@ -7,7 +7,6 @@ import { IUserInfoContext } from "../../domain/user/IUserInfoContext";
 import { Role } from "../../entity/Role";
 import { ERoles } from "../../domain/helpers/ERoles";
 import { INewUserRequest } from "../../domain/user/INewUserRequest";
-import * as bcrypt from "bcryptjs";
 import { EUserAccountType } from "../../domain/helpers/EUserAccountType";
 passport.use(
   "context",
@@ -30,17 +29,89 @@ passport.use(
   )
 );
 
+const FavebookStrategy = require("passport-facebook-token");
+passport.use(
+  "facebook-oauth2",
+  new FavebookStrategy(
+    {
+      clientID: PROPERTIES.FACEBOOK.FACEBOOK_APP_ID,
+      clientSecret: PROPERTIES.FACEBOOK.FACEBOOK_APP_SECRET,
+      profileFields: [
+        "id",
+        "displayName",
+        "email",
+        "first_name",
+        "middle_name",
+        "last_name"
+      ]
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      UserAccount.findOne({ where: { externalProviderId: profile.id } })
+        .then(async user => {
+          if (user) {
+            const userResponse: IUserInfoContext = {
+              userId: user.userId,
+              userName: user.userName,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              accountType: user.accountType,
+              additionalInfo: profile
+            };
+            return done(null, userResponse);
+          } else {
+            const roles: Role[] = [
+              await Role.findOne({ where: { name: ERoles.USER } })
+            ];
+            let fb_email = null;
+            if (profile.emails[0].value) {
+              fb_email = profile.emails[0].value;
+            }
+            const newFacebookAccountUser: INewUserRequest = {
+              userName: profile.displayName,
+              firstName: profile.name.givenName,
+              lastName: profile.name.familyName,
+              email: fb_email,
+              password: null,
+              accountType: EUserAccountType.facebook,
+              roles: roles,
+              externalProviderId: profile.id
+            };
+            const createdUser = UserAccount.create(newFacebookAccountUser);
+            const registerNewUser = await UserAccount.save(createdUser);
+
+            const userReponse: IUserInfoContext = {
+              userId: registerNewUser.userId,
+              userName: registerNewUser.userName,
+              firstName: registerNewUser.firstName,
+              lastName: registerNewUser.lastName,
+              email: registerNewUser.email,
+              accountType: registerNewUser.accountType,
+              additionalInfo: profile
+            };
+            logger.info("Received google sign in request");
+            return done(null, userReponse);
+          }
+        })
+        .catch(err => {
+          logger.error(err);
+          done(null, false);
+        });
+    }
+  )
+);
+
 const GoogleStrategy = require("passport-google-plus-token");
 passport.use(
   "google-oauth2",
   new GoogleStrategy(
     {
-      clientID: PROPERTIES.GOOGLE_OAUTH2_CLIENT_ID,
-      clientSecret: PROPERTIES.GOOGLE_OAUTH2_CLIENT_SECRET
+      clientID: PROPERTIES.GOOGLE.GOOGLE_OAUTH2_CLIENT_ID,
+      clientSecret: PROPERTIES.GOOGLE.GOOGLE_OAUTH2_CLIENT_SECRET
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        UserAccount.findOne({ where: { googleAccountId: profile.id } }).then(
+        UserAccount.findOne({ where: { externalProviderId: profile.id } }).then(
           async user => {
             if (user) {
               const userResponse: IUserInfoContext = {
@@ -52,6 +123,7 @@ passport.use(
                 accountType: user.accountType,
                 additionalInfo: profile
               };
+              logger.info("Received google sign in request");
               return done(null, userResponse);
             } else {
               const roles: Role[] = [
@@ -62,10 +134,10 @@ passport.use(
                 firstName: profile.name.givenName,
                 lastName: profile.name.familyName,
                 email: profile.emails[0].value,
-                password: await bcrypt.hash(profile.id, 10),
+                password: null,
                 accountType: EUserAccountType.google,
                 roles: roles,
-                googleAccountId: profile.id
+                externalProviderId: profile.id
               };
 
               const createdUser = UserAccount.create(newGoogleAccountUser);
@@ -80,6 +152,7 @@ passport.use(
                 accountType: registerNewUser.accountType,
                 additionalInfo: profile
               };
+              logger.info("Received google sign in request");
               return done(null, userReponse);
             }
           }

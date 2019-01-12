@@ -29,6 +29,14 @@ export class UserAccountService {
     return this._userAccountDAO.createNewUser(_newUser);
   }
 
+  public async updateUser(_user: UserAccount): Promise<UserAccount> {
+    return this._userAccountDAO.updateUser(_user);
+  }
+
+  public async deleteUser(_user: UserAccount): Promise<UserAccount> {
+    return this._userAccountDAO.deleteUser(_user);
+  }
+
   public async getUserRole(_id: number) {
     return this._userAccountDAO.getUserRoles(_id);
   }

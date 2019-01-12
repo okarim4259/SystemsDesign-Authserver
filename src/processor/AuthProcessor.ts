@@ -11,6 +11,7 @@ import * as bcrypt from "bcryptjs";
 import { IUserInfoContext } from "../domain/user/IUserInfoContext";
 import { TokenService } from "../service/TokenService";
 import { logger } from "../utility/Logger";
+import { Role } from "../entity/Role";
 
 @injectable()
 export class AuthProcessor {
@@ -24,11 +25,18 @@ export class AuthProcessor {
   private readonly _tokenService: TokenService;
 
   public async loginUser(req: Request, res: Response): Promise<Response> {
+    logger.info(`Receieved login request ${req.body.toString()}`);
     const user = await this.getUserByEmail(req.body.email);
     if (!user) {
       return res
         .status(HttpStatus.NOT_FOUND)
         .json({ message: "Could not find account with that email" });
+    }
+
+    if (user.accountType === EUserAccountType.google) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        message: "Email Associated is with external identity provider"
+      });
     }
 
     const passwordMatched: Boolean = await bcrypt.compare(
@@ -53,10 +61,6 @@ export class AuthProcessor {
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: "Could not perform login at this time " });
     }
-    res.cookie("access_token", jwtToken, {
-      httpOnly: true,
-      secure: true
-    });
     res.status(HttpStatus.OK).json({
       success: true,
       access_token: "Bearer " + jwtToken
@@ -64,7 +68,11 @@ export class AuthProcessor {
     return res;
   }
 
-  public async registerNewUser(req: Request, res: Response): Promise<Response> {
+  public async registerNewUser(
+    req: Request,
+    res: Response,
+    _accountType: EUserAccountType
+  ): Promise<Response> {
     if (!(await this.isUniqueEmail(req.body.email))) {
       return res
         .status(HttpStatus.CONFLICT)
@@ -78,7 +86,8 @@ export class AuthProcessor {
     }
 
     const newUserRequest: INewUserRequest = await this.parseNewUserRequestBody(
-      req.body
+      req.body,
+      _accountType
     );
 
     if (!newUserRequest) {
@@ -111,7 +120,8 @@ export class AuthProcessor {
   }
 
   private async parseNewUserRequestBody(
-    _requestBody: any
+    _requestBody: any,
+    _accountType: EUserAccountType
   ): Promise<INewUserRequest> {
     const newUserRequest: INewUserRequest = {
       userName: _requestBody.userName,
@@ -119,11 +129,26 @@ export class AuthProcessor {
       lastName: _requestBody.lastName,
       email: _requestBody.email,
       password: await bcrypt.hash(_requestBody.password, 10),
-      accountType: EUserAccountType.local,
-      roles: [await this._roleService.getRoleByName(ERoles.USER)],
+      accountType: _accountType,
+      roles: await this.getRoles(_accountType),
       phoneNumber: _requestBody.phoneNumber
     };
     return newUserRequest;
+  }
+
+  private async getRoles(_accountType: EUserAccountType): Promise<Role[]> {
+    const roles: Role[] = new Array<Role>();
+    if (_accountType === EUserAccountType.local) {
+      roles.push(await this._roleService.getRoleByName(ERoles.USER));
+    } else if (_accountType === EUserAccountType.admin) {
+      roles.push(await this._roleService.getRoleByName(ERoles.USER));
+      roles.push(await this._roleService.getRoleByName(ERoles.ADMIN));
+    } else {
+      roles.push(await this._roleService.getRoleByName(ERoles.USER));
+      roles.push(await this._roleService.getRoleByName(ERoles.ADMIN));
+      roles.push(await this._roleService.getRoleByName(ERoles.SUPER));
+    }
+    return roles;
   }
 
   private async getUserByEmail(_email: string) {

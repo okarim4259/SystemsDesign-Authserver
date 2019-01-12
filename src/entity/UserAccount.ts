@@ -28,17 +28,17 @@ export class UserAccount extends BaseEntity {
   @Column("varchar", { length: 50 })
   lastName: string;
 
-  @Column("varchar", { length: 50, unique: true, nullable: false })
+  @Column("varchar", { length: 50, unique: true, nullable: true })
   email: string;
 
-  @Column("varchar")
+  @Column("varchar", { nullable: true })
   password: string;
 
   @Column("varchar", { nullable: true })
   accountType: EUserAccountType;
 
   @Column("varchar", { nullable: true })
-  googleAccountId: string;
+  externalProviderId: string;
 
   @Column("varchar", { nullable: true })
   phoneNumber: string;

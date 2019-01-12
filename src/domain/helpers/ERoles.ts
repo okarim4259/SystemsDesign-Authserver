@@ -1,5 +1,5 @@
 export enum ERoles {
-  SUPERADMIN = "role_super_admin",
+  SUPER = "role_super",
   ADMIN = "role_admin",
   USER = "role_user"
 }

@@ -34,4 +34,25 @@ export class OAuthController {
         .json({ message: "Oops something went wrong!!!" });
     }
   }
+
+  @httpGet(
+    "/facebook",
+    passport.authenticate("facebook-oauth2", {
+      session: false,
+      scope: ["email", "public_profile"]
+    })
+  )
+  public async facebookOAuth(
+    @request() req: express.Request,
+    @response() res: express.Response
+  ) {
+    try {
+      return await this._oauthProcessor.facebookOAuthSignIn(req, res);
+    } catch (err) {
+      logger.error(err);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Oops something went wrong!!!" });
+    }
+  }
 }

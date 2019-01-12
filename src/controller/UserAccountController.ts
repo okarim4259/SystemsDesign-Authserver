@@ -2,7 +2,10 @@ import {
   controller,
   httpGet,
   request,
-  response
+  response,
+  httpPost,
+  httpPut,
+  httpDelete
 } from "inversify-express-utils";
 import { Request, Response } from "express";
 import { inject } from "inversify";
@@ -39,6 +42,33 @@ export class UserAccountController {
   ) {
     try {
       return await this._userAccountProcessor.getUserContext(req, res);
+    } catch (err) {
+      logger.error(err);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Oops something went wrong!!!" });
+    }
+  }
+
+  @httpPut("/update-info", passport.authenticate("context", { session: false }))
+  public async updateUser(@request() req: Request, @response() res: Response) {
+    try {
+      return await this._userAccountProcessor.updateUserInfo(req, res);
+    } catch (err) {
+      logger.error(err);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "Oops something went wrong!!!" });
+    }
+  }
+
+  @httpDelete(
+    "/delete-account",
+    passport.authenticate("context", { session: false })
+  )
+  public async deleteUser(@request() req: Request, @response() res: Response) {
+    try {
+      return await this._userAccountProcessor.deleteUser(req, res);
     } catch (err) {
       logger.error(err);
       return res

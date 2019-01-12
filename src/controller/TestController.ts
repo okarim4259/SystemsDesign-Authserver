@@ -1,4 +1,10 @@
-import { controller, httpGet, response } from "inversify-express-utils";
+import {
+  controller,
+  httpGet,
+  response,
+  httpPost,
+  request
+} from "inversify-express-utils";
 import * as express from "express";
 import { inject } from "inversify";
 import { TYPE_DAO } from "../config/ioc_container/inversify.typeBindings";
@@ -10,9 +16,18 @@ export class TestController {
   private readonly _userAccountDAO: UserAccountDAO;
 
   @httpGet("/")
-  public async get(@response() res: express.Response) {
-    // const users = await this._userAccountDAO.getAllUsers();
-    // console.log(users);
-    res.json({ message: "Test Controller Initialized" });
+  public async get(
+    @request() req: express.Request,
+    @response() res: express.Response
+  ) {
+    res.json({ message: "This is a test controller get method" });
+  }
+
+  @httpPost("/")
+  public async post(
+    @request() req: express.Request,
+    @response() res: express.Response
+  ) {
+    res.json({ message: "This is a test controller post method" });
   }
 }
